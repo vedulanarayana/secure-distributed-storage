@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  storage-node-1:
+    build:
+      context: .
+      dockerfile: docker/storage_node.Dockerfile
+    environment:
+      - NODE_ID=node-1
+      - DB_PATH=/data/node-1.db
+    volumes:
+      - storage_node_1_data:/data
+      - ./certs:/certs:ro
+    ports:
+      - "9001:8000"
+
+  storage-node-2:
+    build:
+      context: .
+      dockerfile: docker/storage_node.Dockerfile
+    environment:
+      - NODE_ID=node-2
+      - DB_PATH=/data/node-2.db
+    volumes:
+      - storage_node_2_data:/data
+      - ./certs:/certs:ro
+    ports:
+      - "9002:8000"
+
+  storage-node-3:
+    build:
+      context: .
+      dockerfile: docker/storage_node.Dockerfile
+    environment:
+      - NODE_ID=node-3
+      - DB_PATH=/data/node-3.db
+    volumes:
+      - storage_node_3_data:/data
+      - ./certs:/certs:ro
+    ports:
+      - "9003:8000"
+
+  metadata-service:
+    build:
+      context: .
+      dockerfile: docker/metadata_service.Dockerfile
+    environment:
+      - METADATA_DB_PATH=/data/metadata.db
+      - METADATA_HMAC_SECRET=${METADATA_HMAC_SECRET:-dev-only-shared-hmac-secret-change-me}
+    volumes:
+      - metadata_data:/data
+      - ./certs:/certs:ro
+    ports:
+      - "9000:8000"
+    depends_on:
+      - storage-node-1
+      - storage-node-2
+      - storage-node-3
+
+volumes:
+  storage_node_1_data:
+  storage_node_2_data:
+  storage_node_3_data:
+  metadata_data:
