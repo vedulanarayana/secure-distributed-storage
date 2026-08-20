@@ -7,7 +7,9 @@ class PermissionSource(Protocol):
     def get_permission(self, user_id: str, file_id: str) -> str | None: ...
 
 
-def has_permission(store: PermissionSource, user_id: str, file_id: str, required: str) -> bool:
+def has_permission(
+    store: PermissionSource, user_id: str, file_id: str, required: str
+) -> bool:
     granted = store.get_permission(user_id, file_id)
     if granted is None:
         return False

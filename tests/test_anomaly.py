@@ -8,7 +8,10 @@ def test_normal_event_not_flagged():
     score_module._model = train(n_samples=1000, seed=1)
 
     features = AccessFeatures(
-        request_rate=4.0, off_hours=0.0, bytes_transferred=2_000_000.0, failed_auth_count=0.0
+        request_rate=4.0,
+        off_hours=0.0,
+        bytes_transferred=2_000_000.0,
+        failed_auth_count=0.0,
     )
     _, is_outlier = score_event(features)
     assert not is_outlier
@@ -18,7 +21,10 @@ def test_extreme_outlier_is_flagged():
     score_module._model = train(n_samples=1000, seed=1)
 
     features = AccessFeatures(
-        request_rate=500.0, off_hours=1.0, bytes_transferred=5_000_000_000.0, failed_auth_count=25.0
+        request_rate=500.0,
+        off_hours=1.0,
+        bytes_transferred=5_000_000_000.0,
+        failed_auth_count=25.0,
     )
     _, is_outlier = score_event(features)
     assert is_outlier

@@ -14,7 +14,9 @@ from client.keywrap import generate_keypair, unwrap_key, wrap_key
 from client.metadata_client import MetadataClient
 from client.uploader import StorageCluster, download_file, upload_file
 
-HMAC_SECRET = os.environ.get("METADATA_HMAC_SECRET", "dev-only-shared-hmac-secret-change-me").encode()
+HMAC_SECRET = os.environ.get(
+    "METADATA_HMAC_SECRET", "dev-only-shared-hmac-secret-change-me"
+).encode()
 METADATA_URL = os.environ.get("METADATA_URL", "http://127.0.0.1:9000")
 STORAGE_NODES = os.environ.get(
     "STORAGE_NODES", "http://127.0.0.1:9001,http://127.0.0.1:9002,http://127.0.0.1:9003"

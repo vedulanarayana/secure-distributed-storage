@@ -29,9 +29,13 @@ def serialize_public_key(public_key: rsa.RSAPublicKey) -> bytes:
     )
 
 
-def serialize_private_key(private_key: rsa.RSAPrivateKey, password: bytes | None = None) -> bytes:
+def serialize_private_key(
+    private_key: rsa.RSAPrivateKey, password: bytes | None = None
+) -> bytes:
     encryption = (
-        serialization.BestAvailableEncryption(password) if password else serialization.NoEncryption()
+        serialization.BestAvailableEncryption(password)
+        if password
+        else serialization.NoEncryption()
     )
     return private_key.private_bytes(
         serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, encryption
