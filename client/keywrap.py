@@ -43,8 +43,14 @@ def serialize_private_key(
 
 
 def load_public_key(pem: bytes) -> rsa.RSAPublicKey:
-    return serialization.load_pem_public_key(pem)
+    key = serialization.load_pem_public_key(pem)
+    if not isinstance(key, rsa.RSAPublicKey):
+        raise TypeError("expected an RSA public key")
+    return key
 
 
 def load_private_key(pem: bytes, password: bytes | None = None) -> rsa.RSAPrivateKey:
-    return serialization.load_pem_private_key(pem, password=password)
+    key = serialization.load_pem_private_key(pem, password=password)
+    if not isinstance(key, rsa.RSAPrivateKey):
+        raise TypeError("expected an RSA private key")
+    return key
