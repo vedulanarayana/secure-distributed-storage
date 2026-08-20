@@ -1,6 +1,6 @@
 import hashlib
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024
 

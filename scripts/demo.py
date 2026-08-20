@@ -10,6 +10,8 @@ Requires the storage nodes and metadata service to be running locally
 import os
 import uuid
 
+import httpx
+
 from client.keywrap import generate_keypair, unwrap_key, wrap_key
 from client.metadata_client import MetadataClient
 from client.uploader import StorageCluster, download_file, upload_file
@@ -61,7 +63,7 @@ def main() -> None:
         eve = MetadataClient(METADATA_URL, "eve", eve_key)
         eve.get_manifest(file_id)
         print("UNEXPECTED: eve was able to read the manifest")
-    except Exception:
+    except httpx.HTTPStatusError:
         print("eve (no ACL entry) was correctly denied access to the manifest")
 
 

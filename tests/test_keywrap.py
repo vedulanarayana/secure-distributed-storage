@@ -15,5 +15,5 @@ def test_wrong_private_key_fails_unwrap():
     _, public_key = generate_keypair()
     other_private_key, _ = generate_keypair()
     wrapped = wrap_key(public_key, generate_file_key())
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         unwrap_key(other_private_key, wrapped)
