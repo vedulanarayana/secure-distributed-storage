@@ -1,11 +1,13 @@
 import hashlib
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024
 
 
-def chunk_file(path: str | Path, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Iterator[bytes]:
+def chunk_file(
+    path: str | Path, chunk_size: int = DEFAULT_CHUNK_SIZE
+) -> Iterator[bytes]:
     with open(path, "rb") as f:
         while True:
             data = f.read(chunk_size)

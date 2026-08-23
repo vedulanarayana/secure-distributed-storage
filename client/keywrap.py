@@ -29,9 +29,13 @@ def serialize_public_key(public_key: rsa.RSAPublicKey) -> bytes:
     )
 
 
-def serialize_private_key(private_key: rsa.RSAPrivateKey, password: bytes | None = None) -> bytes:
+def serialize_private_key(
+    private_key: rsa.RSAPrivateKey, password: bytes | None = None
+) -> bytes:
     encryption = (
-        serialization.BestAvailableEncryption(password) if password else serialization.NoEncryption()
+        serialization.BestAvailableEncryption(password)
+        if password
+        else serialization.NoEncryption()
     )
     return private_key.private_bytes(
         serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, encryption
@@ -39,8 +43,14 @@ def serialize_private_key(private_key: rsa.RSAPrivateKey, password: bytes | None
 
 
 def load_public_key(pem: bytes) -> rsa.RSAPublicKey:
-    return serialization.load_pem_public_key(pem)
+    key = serialization.load_pem_public_key(pem)
+    if not isinstance(key, rsa.RSAPublicKey):
+        raise TypeError("expected an RSA public key")
+    return key
 
 
 def load_private_key(pem: bytes, password: bytes | None = None) -> rsa.RSAPrivateKey:
-    return serialization.load_pem_private_key(pem, password=password)
+    key = serialization.load_pem_private_key(pem, password=password)
+    if not isinstance(key, rsa.RSAPrivateKey):
+        raise TypeError("expected an RSA private key")
+    return key

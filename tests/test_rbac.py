@@ -38,7 +38,9 @@ def test_owner_can_read_own_file(tmp_path):
     alice_key = create_user(client, "alice")
     register_sample_file(client, "alice", alice_key)
 
-    resp = client.get("/files/file-1/manifest", headers=auth_headers("alice", alice_key))
+    resp = client.get(
+        "/files/file-1/manifest", headers=auth_headers("alice", alice_key)
+    )
     assert resp.status_code == 200
 
 
@@ -86,7 +88,9 @@ def test_non_owner_cannot_share(tmp_path):
 def test_invalid_credentials_rejected(tmp_path):
     client = make_client(tmp_path)
     create_user(client, "alice")
-    resp = client.get("/files/file-1/manifest", headers=auth_headers("alice", "wrong-key"))
+    resp = client.get(
+        "/files/file-1/manifest", headers=auth_headers("alice", "wrong-key")
+    )
     assert resp.status_code == 401
 
 

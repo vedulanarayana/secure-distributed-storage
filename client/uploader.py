@@ -23,7 +23,9 @@ class StorageCluster:
         successes = 0
         for base_url in self.node_urls:
             try:
-                resp = self.client.put(f"{base_url}/chunks/{chunk_hash}", content=ciphertext)
+                resp = self.client.put(
+                    f"{base_url}/chunks/{chunk_hash}", content=ciphertext
+                )
                 if resp.status_code == 200:
                     successes += 1
             except httpx.HTTPError:
@@ -71,7 +73,9 @@ def upload_file(
     return manifest, signature, file_key
 
 
-def download_file(manifest: dict[str, Any], file_key: bytes, cluster: StorageCluster) -> bytes:
+def download_file(
+    manifest: dict[str, Any], file_key: bytes, cluster: StorageCluster
+) -> bytes:
     parts = []
     for chunk in sorted(manifest["chunks"], key=lambda c: c["index"]):
         ciphertext = cluster.get_chunk(chunk["hash"])

@@ -1,4 +1,5 @@
 import pytest
+from cryptography.exceptions import InvalidTag
 
 from client.crypto import decrypt_chunk, encrypt_chunk, generate_file_key
 
@@ -14,7 +15,7 @@ def test_wrong_key_fails_decryption():
     key = generate_file_key()
     other_key = generate_file_key()
     nonce, ciphertext = encrypt_chunk(key, b"secret payload")
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidTag):
         decrypt_chunk(other_key, nonce, ciphertext)
 
 
@@ -22,7 +23,7 @@ def test_tampered_ciphertext_fails_decryption():
     key = generate_file_key()
     nonce, ciphertext = encrypt_chunk(key, b"secret payload")
     tampered = ciphertext[:-1] + bytes([ciphertext[-1] ^ 0x01])
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidTag):
         decrypt_chunk(key, nonce, tampered)
 
 

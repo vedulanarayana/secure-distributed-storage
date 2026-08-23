@@ -13,8 +13,7 @@ class MetadataStore:
         self._init_schema()
 
     def _init_schema(self) -> None:
-        self._conn.executescript(
-            """
+        self._conn.executescript("""
             CREATE TABLE IF NOT EXISTS users (
                 user_id TEXT PRIMARY KEY,
                 key_hash TEXT NOT NULL,
@@ -51,8 +50,7 @@ class MetadataStore:
                 anomaly_score REAL,
                 flagged INTEGER NOT NULL DEFAULT 0
             );
-            """
-        )
+            """)
         self._conn.commit()
 
     # --- users ---
@@ -74,7 +72,9 @@ class MetadataStore:
 
     # --- files ---
 
-    def create_file(self, file_id: str, owner_id: str, manifest: dict[str, Any], signature: str) -> None:
+    def create_file(
+        self, file_id: str, owner_id: str, manifest: dict[str, Any], signature: str
+    ) -> None:
         self._conn.execute(
             "INSERT INTO files (file_id, owner_id, manifest, signature, created_at) "
             "VALUES (?, ?, ?, ?, ?)",
@@ -83,7 +83,9 @@ class MetadataStore:
         self._conn.commit()
 
     def get_file(self, file_id: str) -> dict[str, Any] | None:
-        row = self._conn.execute("SELECT * FROM files WHERE file_id = ?", (file_id,)).fetchone()
+        row = self._conn.execute(
+            "SELECT * FROM files WHERE file_id = ?", (file_id,)
+        ).fetchone()
         if row is None:
             return None
         return {
@@ -139,9 +141,18 @@ class MetadataStore:
             "INSERT INTO access_log "
             "(user_id, file_id, action, timestamp, source_ip, bytes_transferred, success) "
             "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (user_id, file_id, action, time.time(), source_ip, bytes_transferred, int(success)),
+            (
+                user_id,
+                file_id,
+                action,
+                time.time(),
+                source_ip,
+                bytes_transferred,
+                int(success),
+            ),
         )
         self._conn.commit()
+        assert cur.lastrowid is not None
         return cur.lastrowid
 
     def recent_events(self, user_id: str, window_seconds: int) -> list[dict[str, Any]]:

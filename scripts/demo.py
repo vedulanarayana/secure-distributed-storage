@@ -10,11 +10,15 @@ Requires the storage nodes and metadata service to be running locally
 import os
 import uuid
 
+import httpx
+
 from client.keywrap import generate_keypair, unwrap_key, wrap_key
 from client.metadata_client import MetadataClient
 from client.uploader import StorageCluster, download_file, upload_file
 
-HMAC_SECRET = os.environ.get("METADATA_HMAC_SECRET", "dev-only-shared-hmac-secret-change-me").encode()
+HMAC_SECRET = os.environ.get(
+    "METADATA_HMAC_SECRET", "dev-only-shared-hmac-secret-change-me"
+).encode()
 METADATA_URL = os.environ.get("METADATA_URL", "http://127.0.0.1:9000")
 STORAGE_NODES = os.environ.get(
     "STORAGE_NODES", "http://127.0.0.1:9001,http://127.0.0.1:9002,http://127.0.0.1:9003"
@@ -59,7 +63,7 @@ def main() -> None:
         eve = MetadataClient(METADATA_URL, "eve", eve_key)
         eve.get_manifest(file_id)
         print("UNEXPECTED: eve was able to read the manifest")
-    except Exception:
+    except httpx.HTTPStatusError:
         print("eve (no ACL entry) was correctly denied access to the manifest")
 
 

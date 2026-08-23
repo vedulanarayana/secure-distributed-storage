@@ -27,9 +27,13 @@ def generate_normal_dataset(n_samples: int = 2000, seed: int = 42) -> np.ndarray
     return np.column_stack([request_rate, off_hours, bytes_transferred, failed_auth])
 
 
-def train(n_samples: int = 2000, seed: int = 42, contamination: float = 0.05) -> IsolationForest:
+def train(
+    n_samples: int = 2000, seed: int = 42, contamination: float = 0.05
+) -> IsolationForest:
     data = generate_normal_dataset(n_samples, seed)
-    model = IsolationForest(n_estimators=200, contamination=contamination, random_state=seed)
+    model = IsolationForest(
+        n_estimators=200, contamination=contamination, random_state=seed
+    )
     model.fit(data)
     return model
 

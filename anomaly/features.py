@@ -11,7 +11,9 @@ class AccessFeatures:
     failed_auth_count: float
 
 
-def extract_features(recent_events: list[dict[str, Any]], current_event: dict[str, Any]) -> AccessFeatures:
+def extract_features(
+    recent_events: list[dict[str, Any]], current_event: dict[str, Any]
+) -> AccessFeatures:
     timestamp = current_event["timestamp"]
     hour = dt.datetime.fromtimestamp(timestamp, tz=dt.timezone.utc).hour
     off_hours = 1.0 if (hour < 8 or hour >= 20) else 0.0
