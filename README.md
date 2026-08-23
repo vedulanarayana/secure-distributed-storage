@@ -126,6 +126,18 @@ signature tamper rejection, storage-node content-hash rejection, RBAC
 allow/deny paths (owner, shared user, unauthorized user), and anomaly-model
 flagging on a synthetic outlier access pattern.
 
+## Linting and formatting
+
+CI runs `ruff`, `black --check`, `mypy`, and `pytest` on every push and
+pull request. To run the same checks locally before committing:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+This runs ruff, black, and mypy automatically on `git commit`.
+
 ## Anomaly detection - scope
 
 "Real-time" here means each access event is scored synchronously against a
