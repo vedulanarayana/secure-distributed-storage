@@ -1,3 +1,4 @@
+import hmac
 import json
 import sqlite3
 import time
@@ -68,7 +69,9 @@ class MetadataStore:
         row = self._conn.execute(
             "SELECT key_hash FROM users WHERE user_id = ?", (user_id,)
         ).fetchone()
-        return row is not None and row["key_hash"] == hash_key(api_key)
+        return row is not None and hmac.compare_digest(
+            row["key_hash"], hash_key(api_key)
+        )
 
     # --- files ---
 

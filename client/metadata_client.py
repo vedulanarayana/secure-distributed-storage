@@ -12,10 +12,11 @@ class MetadataClient:
         user_id: str,
         api_key: str,
         client: httpx.Client | None = None,
+        verify: bool | str = True,
     ):
         self.base_url = base_url.rstrip("/")
         self.headers = {"X-User-Id": user_id, "X-Api-Key": api_key}
-        self.client = client or httpx.Client(verify=False, timeout=30.0)
+        self.client = client or httpx.Client(verify=verify, timeout=30.0)
 
     def create_user(self, user_id: str) -> str:
         resp = self.client.post(f"{self.base_url}/users", json={"user_id": user_id})

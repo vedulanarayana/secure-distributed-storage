@@ -1,7 +1,9 @@
 import os
 import time
+from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
+from pydantic import BaseModel
 
 from anomaly.features import extract_features
 from anomaly.score import score_event
@@ -11,6 +13,22 @@ from metadata_service.db import MetadataStore
 from metadata_service.rbac import has_permission
 
 ACCESS_WINDOW_SECONDS = 300
+
+
+class CreateUserRequest(BaseModel):
+    user_id: str
+
+
+class CreateFileRequest(BaseModel):
+    file_id: str
+    manifest: dict[str, Any]
+    signature: str
+
+
+class ShareFileRequest(BaseModel):
+    user_id: str
+    wrapped_key: str
+    permission: str = "read"
 
 
 def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> FastAPI:
@@ -66,19 +84,21 @@ def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> 
         return flagged
 
     @app.post("/users")
-    async def create_user(payload: dict):
-        user_id = payload["user_id"]
+    async def create_user(payload: CreateUserRequest):
+        user_id = payload.user_id
         api_key = generate_api_key()
         store.create_user(user_id, hash_key(api_key))
         return {"user_id": user_id, "api_key": api_key}
 
     @app.post("/files")
     async def create_file(
-        payload: dict, request: Request, user_id: str = Depends(get_current_user)
+        payload: CreateFileRequest,
+        request: Request,
+        user_id: str = Depends(get_current_user),
     ):
-        file_id = payload["file_id"]
-        manifest = payload["manifest"]
-        signature = payload["signature"]
+        file_id = payload.file_id
+        manifest = payload.manifest
+        signature = payload.signature
 
         if not verify_manifest(hmac_secret, manifest, signature):
             raise HTTPException(
@@ -89,12 +109,13 @@ def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> 
             file_id, owner_id=user_id, manifest=manifest, signature=signature
         )
         store.grant_permission(user_id, file_id, "owner")
+        file_size = sum(chunk["size"] for chunk in manifest["chunks"])
         record_and_score(
             user_id,
             file_id,
             "upload_manifest",
             client_ip(request),
-            len(str(manifest)),
+            file_size,
             True,
         )
         return {"file_id": file_id, "status": "registered"}
@@ -102,7 +123,7 @@ def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> 
     @app.post("/files/{file_id}/share")
     async def share_file(
         file_id: str,
-        payload: dict,
+        payload: ShareFileRequest,
         request: Request,
         user_id: str = Depends(get_current_user),
     ):
@@ -112,9 +133,9 @@ def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> 
                 status_code=403, detail="only the file owner may share access"
             )
 
-        recipient_id = payload["user_id"]
-        store.set_wrapped_key(file_id, recipient_id, payload["wrapped_key"])
-        store.grant_permission(recipient_id, file_id, payload.get("permission", "read"))
+        recipient_id = payload.user_id
+        store.set_wrapped_key(file_id, recipient_id, payload.wrapped_key)
+        store.grant_permission(recipient_id, file_id, payload.permission)
         record_and_score(user_id, file_id, "share", client_ip(request), 0, True)
         return {"status": "shared", "file_id": file_id, "user_id": recipient_id}
 
@@ -135,12 +156,13 @@ def create_app(db_path: str | None = None, hmac_secret: bytes | None = None) -> 
         if row is None:
             raise HTTPException(status_code=404, detail="file not found")
 
+        file_size = sum(chunk["size"] for chunk in row["manifest"]["chunks"])
         flagged = record_and_score(
             user_id,
             file_id,
             "download_manifest",
             client_ip(request),
-            len(row["manifest_raw"]),
+            file_size,
             True,
         )
         if flagged:
