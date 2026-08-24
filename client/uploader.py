@@ -15,9 +15,14 @@ class StorageCluster:
     down, which is all this project needs to demonstrate.
     """
 
-    def __init__(self, node_urls: list[str], client: httpx.Client | None = None):
+    def __init__(
+        self,
+        node_urls: list[str],
+        client: httpx.Client | None = None,
+        verify: bool | str = True,
+    ):
         self.node_urls = node_urls
-        self.client = client or httpx.Client(verify=False, timeout=30.0)
+        self.client = client or httpx.Client(verify=verify, timeout=30.0)
 
     def put_chunk(self, chunk_hash: str, ciphertext: bytes, quorum: int = 2) -> int:
         successes = 0

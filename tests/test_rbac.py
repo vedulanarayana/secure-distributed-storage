@@ -105,3 +105,9 @@ def test_tampered_manifest_signature_rejected(tmp_path):
         headers=auth_headers("alice", alice_key),
     )
     assert resp.status_code == 400
+
+
+def test_malformed_request_body_returns_422_not_500(tmp_path):
+    client = make_client(tmp_path)
+    resp = client.post("/users", json={"not_user_id": "alice"})
+    assert resp.status_code == 422

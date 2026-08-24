@@ -24,15 +24,24 @@ STORAGE_NODES = os.environ.get(
     "STORAGE_NODES", "http://127.0.0.1:9001,http://127.0.0.1:9002,http://127.0.0.1:9003"
 ).split(",")
 
+# Only relevant when the services are reached over https:// (e.g. the
+# docker-compose TLS setup); ignored for the plain-HTTP run_local.sh flow.
+# Points at the self-signed dev cert so connections are actually verified
+# against it instead of skipping certificate validation entirely.
+TLS_CA_CERT = os.environ.get("TLS_CA_CERT", "certs/dev-cert.pem")
+VERIFY: bool | str = TLS_CA_CERT if os.path.exists(TLS_CA_CERT) else True
+
 
 def main() -> None:
-    cluster = StorageCluster(STORAGE_NODES)
-    bootstrap = MetadataClient(METADATA_URL, user_id="bootstrap", api_key="unused")
+    cluster = StorageCluster(STORAGE_NODES, verify=VERIFY)
+    bootstrap = MetadataClient(
+        METADATA_URL, user_id="bootstrap", api_key="unused", verify=VERIFY
+    )
 
     alice_key = bootstrap.create_user("alice")
     bob_key = bootstrap.create_user("bob")
-    alice = MetadataClient(METADATA_URL, "alice", alice_key)
-    bob = MetadataClient(METADATA_URL, "bob", bob_key)
+    alice = MetadataClient(METADATA_URL, "alice", alice_key, verify=VERIFY)
+    bob = MetadataClient(METADATA_URL, "bob", bob_key, verify=VERIFY)
 
     bob_private, bob_public = generate_keypair()
 
@@ -60,7 +69,7 @@ def main() -> None:
 
     try:
         eve_key = bootstrap.create_user("eve")
-        eve = MetadataClient(METADATA_URL, "eve", eve_key)
+        eve = MetadataClient(METADATA_URL, "eve", eve_key, verify=VERIFY)
         eve.get_manifest(file_id)
         print("UNEXPECTED: eve was able to read the manifest")
     except httpx.HTTPStatusError:
